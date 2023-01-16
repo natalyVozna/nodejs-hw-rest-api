@@ -5,7 +5,7 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production node ./server.js",
     "start:dev": "cross-env NODE_ENV=development nodemon ./server.js",
-    "lint": "eslint **/*.js",
+    "lint": "eslint \"./**/*.js\"",
     "lint:fix": "eslint --fix **/*.js"
   },
   "dependencies": {
@@ -13,6 +13,7 @@
     "cross-env": "7.0.3",
     "express": "4.17.1",
     "joi": "^17.7.0",
+    "joi-phone-number": "^5.1.1",
     "morgan": "1.10.0",
     "uid": "^2.0.1"
   },
