@@ -3,6 +3,7 @@ const logger = require("morgan");
 const cors = require("cors");
 
 const contactsRouter = require("./src/routes/api/contacts");
+const { errorHandler } = require("./src/helpers/apiHelpers");
 
 const app = express();
 
@@ -31,5 +32,7 @@ app.use((err, req, res, next) => {
     data: "Internal Server Error",
   });
 });
+
+// app.use(errorHandler);
 
 module.exports = app;
