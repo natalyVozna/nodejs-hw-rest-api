@@ -27,6 +27,7 @@ const changeContactById = async (id, body) => {
   const contact = await Contact.findByIdAndUpdate(id, { $set: body });
   if (!contact) {
     // throw new WrongParametersError("Not found");
+    // throw new WrongParametersError("Not found");
     return res.status(404).json({ message: "Not found" });
   }
 
