@@ -6,6 +6,10 @@ const contactSchema = new mongoose.Schema(
       type: String,
       required: [true, "Set name for contact"],
     },
+    userId: {
+      type: String,
+      required: true,
+    },
     email: {
       type: String,
     },
@@ -16,14 +20,18 @@ const contactSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    owner: {
+      // type: SchemaTypes.ObjectId,
+      // ref: "user",
+    },
   },
   {
     versionKey: false,
-    // timestamps: true,
+    timestamps: true,
   }
 );
 
-const Contact = mongoose.model("contacts", contactSchema);
+const Contact = mongoose.model("contact", contactSchema);
 
 module.exports = {
   Contact,
