@@ -1,9 +1,8 @@
-const Joi = require("joi");
 const jwt = require("jsonwebtoken");
 const { NotAuthorizedError } = require("../helpers/errors");
 
 const authMiddleware = (req, res, next) => {
-  const [tokenType, token] = req.headers["authorization"].split(" ");
+  const [, token] = req.headers.authorization.split(" ");
 
   if (!token) {
     next(new NotAuthorizedError("Please, provide a token"));
@@ -15,7 +14,7 @@ const authMiddleware = (req, res, next) => {
     req.user = user;
     next();
   } catch (err) {
-    next(new NotAuthorizedError("Invalid token"));
+    next(new NotAuthorizedError("Not authorized"));
   }
 };
 

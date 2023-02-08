@@ -1,5 +1,4 @@
 const Joi = require("joi");
-const { ValidationError } = require("../helpers/errors");
 const RequestError = require("../helpers/RequestError");
 
 const addContactValidation = (req, res, next) => {
@@ -16,8 +15,8 @@ const addContactValidation = (req, res, next) => {
 
   const { error } = schema.validate(req.body);
   if (error) {
-    // next(RequestError(400, error.message));
-    next(ValidationError(JSON.stringify(error.details)));
+    next(RequestError(400, error.message));
+    // next(ValidationError(JSON.stringify(error.details)));
   }
 
   next();
@@ -37,7 +36,8 @@ const patchContactValidation = (req, res, next) => {
 
   const { error } = schema.validate(req.body);
   if (error) {
-    next(ValidationError(JSON.stringify(error.details)));
+    next(RequestError(400, error.message));
+    // next(ValidationError(JSON.stringify(error.details)));
   }
 
   next();

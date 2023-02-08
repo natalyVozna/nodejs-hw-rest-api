@@ -1,17 +1,25 @@
-const { Contact } = require("../db/contactModel");
-const {
-  WrongParametersError,
-  NotAuthorizedError,
-} = require("../helpers/errors");
+const { Contact } = require("../models/contactModel");
 const RequestError = require("../helpers/RequestError");
 
-const getContacts = async (userId) => {
-  const contacts = await Contact.find({ userId });
+const getContacts = async (owner, page, limit, filterParam) => {
+  const contacts = await Contact.find({ owner })
+    .populate("owner", "email")
+    .skip(page * limit)
+    .limit(limit);
+
+  return contacts;
+};
+const getFilteredContacts = async (owner, filterParam) => {
+  const contacts = await Contact.find({
+    owner,
+    favorite: filterParam,
+  }).populate("owner", "email");
+
   return contacts;
 };
 
-const getContactById = async (contactId, userId) => {
-  const contact = await Contact.findOne({ _id: contactId, userId });
+const getContactById = async (contactId, owner) => {
+  const contact = await Contact.findOne({ _id: contactId, owner });
   if (!contact) {
     throw RequestError(404, "Not Found");
   }
@@ -19,29 +27,27 @@ const getContactById = async (contactId, userId) => {
   return contact;
 };
 
-const addContact = async (body, userId) => {
-  const contact = new Contact({ ...body, userId });
-  await contact.save();
+const addContact = async (body, owner) => {
+  const contact = Contact.create({ ...body, owner });
 
   return contact;
 };
 
-const changeContactById = async (contactId, body, userId) => {
+const changeContactById = async (contactId, body, owner) => {
   const contact = await Contact.findOneAndUpdate(
-    { _id: contactId, userId },
+    { _id: contactId, owner },
     { $set: body }
   );
   if (!contact) {
     throw RequestError(404, "Not Found");
-    // throw new WrongParametersError("Not found");
   }
 
   return contact;
 };
 
-const patchContactById = async (contactId, favorite, userId) => {
+const patchContactById = async (contactId, favorite, owner) => {
   const contact = await Contact.findOneAndUpdate(
-    { _id: contactId, userId },
+    { _id: contactId, owner },
     { $set: { favorite } }
   );
   if (!contact) {
@@ -51,12 +57,13 @@ const patchContactById = async (contactId, favorite, userId) => {
   return contact;
 };
 
-const deletContactById = async (contactId, userId) => {
-  await Contact.findOneAndRemove({ _id: contactId, userId });
+const deletContactById = async (contactId, owner) => {
+  await Contact.findOneAndRemove({ _id: contactId, owner });
 };
 
 module.exports = {
   getContactById,
+  getFilteredContacts,
   getContacts,
   addContact,
   changeContactById,

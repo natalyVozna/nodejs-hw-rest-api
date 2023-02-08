@@ -1,40 +1,59 @@
-const { User } = require("../db/userModel");
-const { NotAuthorizedError } = require("../helpers/errors");
+const { User } = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const RequestError = require("../helpers/RequestError");
 
-const registration = async (password, email) => {
-  const user = new User({
+const registration = async (email, password) => {
+  const checkUser = await User.findOne({ email });
+
+  if (checkUser) {
+    throw RequestError(409, "Email in use");
+  }
+  const hashPassword = await bcrypt.hash(password, 10);
+  const user = await User.create({
     email,
-    password,
+    password: hashPassword,
   });
 
-  await user.save();
+  return user;
 };
 
 const login = async (email, password) => {
   const user = await User.findOne({ email });
-  console.log("user", user);
 
   if (!user) {
-    throw new NotAuthorizedError(`No user with email '${email}' found`);
+    throw RequestError(401, `Email or password is wrong`);
   }
   if (!(await bcrypt.compare(password, user.password))) {
-    throw new NotAuthorizedError(`Wrong password`);
+    throw RequestError(401, `Email or password is wrong`);
   }
 
   const token = jwt.sign(
     {
-      _id: user._id,
+      id: user._id,
       subscription: user.subscription,
     },
-    process.env.JWT_SECRET
+    process.env.JWT_SECRET,
+    { expiresIn: "24h" }
   );
 
   return { token, user };
 };
 
+const patchUserSubscription = async (userId, subscription) => {
+  const user = await User.findOneAndUpdate(
+    { _id: userId },
+    { $set: { subscription } }
+  );
+  if (!user) {
+    throw RequestError(404, "Not Found");
+  }
+
+  return user;
+};
+
 module.exports = {
   registration,
   login,
+  patchUserSubscription,
 };
