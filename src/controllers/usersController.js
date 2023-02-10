@@ -1,4 +1,7 @@
+const fs = require("fs");
+const { path } = require("../../app");
 const { User } = require("../models/userModel");
+
 const {
   registration,
   login,
@@ -31,14 +34,30 @@ const getCurrentUserController = async (req, res) => {
     subscription: user.subscription,
   });
 };
+
 const updateUserController = async (req, res) => {
   const { _id: userId } = req.user;
   const { subscription } = req.body;
-  console.log("req.body", req.body, req.user);
   const user = await patchUserSubscription(userId, subscription);
   res.json({
     email: user.email,
     subscription: user.subscription,
+  });
+};
+
+const avatarDir = path.join(__dirname, "../../", "public", "avatars");
+
+const updateAvatarController = async (req, res) => {
+  const { _id } = req.user;
+  const { path: tempUpload, originalname } = req.file;
+  const extention = originalname.split(".").pop();
+  const filename = `${_id}.${extention}`;
+  const resultUpload = path.join(avatarDir, filename);
+  await fs.rename(tempUpload, resultUpload);
+  const avatarURL = path.join("avatars", filename);
+  await User.findByIdAndUpdate(_id, { avatarURL });
+  res.json({
+    avatarURL,
   });
 };
 
@@ -54,4 +73,5 @@ module.exports = {
   logoutController,
   getCurrentUserController,
   updateUserController,
+  updateAvatarController,
 };

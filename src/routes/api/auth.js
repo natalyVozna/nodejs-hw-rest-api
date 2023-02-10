@@ -8,11 +8,13 @@ const {
   logoutController,
   getCurrentUserController,
   updateUserController,
+  updateAvatarController,
 } = require("../../controllers/usersController");
 
 const { asyncWrapper } = require("../../helpers/apiHelpers");
 const { authenticate } = require("../../middlewares/authenticateMiddleware");
 const { validateBody } = require("../../middlewares/validateBody");
+const { upload } = require("../../middlewares/upload");
 
 // router.post("/register", asyncWrapper(registrationController));
 router.post(
@@ -31,6 +33,12 @@ router.patch(
   authenticate,
   validateBody(schemas.patchSubscriptionSchema),
   asyncWrapper(updateUserController)
+);
+router.patch(
+  "/avatars",
+  authenticate,
+  upload.single("avatar"),
+  asyncWrapper(updateAvatarController)
 );
 router.get("/logout", authenticate, asyncWrapper(logoutController));
 
