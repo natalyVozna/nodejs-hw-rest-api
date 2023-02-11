@@ -1,5 +1,5 @@
-const fs = require("fs");
-const { path } = require("../../app");
+const fs = require("fs").promises;
+const path = require("path");
 const { User } = require("../models/userModel");
 
 const {
@@ -28,7 +28,9 @@ const loginController = async (req, res) => {
 };
 const getCurrentUserController = async (req, res) => {
   const { _id } = req.user;
+  console.log("CurrentUse", _id);
   const user = await User.findById(_id);
+  console.log("Current", user);
   res.json({
     email: user.email,
     subscription: user.subscription,
@@ -45,7 +47,7 @@ const updateUserController = async (req, res) => {
   });
 };
 
-const avatarDir = path.join(__dirname, "../../", "public", "avatars");
+const avatarDir = path.join(__dirname, "../", "public", "avatars");
 
 const updateAvatarController = async (req, res) => {
   const { _id } = req.user;
