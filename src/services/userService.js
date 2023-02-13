@@ -3,6 +3,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const RequestError = require("../helpers/RequestError");
 const gravatar = require("gravatar");
+const path = require("path");
+const fs = require("fs").promises;
+const Jimp = require("jimp");
 
 const registration = async (email, password) => {
   const checkUser = await User.findOne({ email });
@@ -23,6 +26,8 @@ const registration = async (email, password) => {
 
 const login = async (email, password) => {
   const user = await User.findOne({ email });
+
+  console.log("user", user);
 
   if (!user) {
     throw RequestError(401, `Email or password is wrong`);
@@ -55,20 +60,31 @@ const patchUserSubscription = async (userId, subscription) => {
   return user;
 };
 
-const updateAvatar = async (userId, subscription) => {
-  const user = await User.findOneAndUpdate(
-    { _id: userId },
-    { $set: { subscription } }
-  );
-  if (!user) {
-    throw RequestError(404, "Not Found");
-  }
+const avatarDir = path.join(__dirname, "../", "public", "avatars");
 
-  return user;
+const updateAvatar = async (_id, { tempUpload, originalname }) => {
+  const extention = originalname.split(".").pop();
+  const filename = `${_id}.${extention}`;
+  const resultUpload = path.join(avatarDir, filename);
+  await Jimp.read(tempUpload)
+    .then((img) => {
+      return img
+        .resize(200, 200, Jimp.RESIZE_BEZIER) // resize
+        .write(tempUpload); // save
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+  await fs.rename(tempUpload, resultUpload);
+  const avatarURL = path.join("avatars", filename);
+  await User.findByIdAndUpdate(_id, { avatarURL });
+
+  return avatarURL;
 };
 
 module.exports = {
   registration,
   login,
   patchUserSubscription,
+  updateAvatar,
 };

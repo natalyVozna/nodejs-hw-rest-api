@@ -1,4 +1,3 @@
-const fs = require("fs").promises;
 const path = require("path");
 const { User } = require("../models/userModel");
 
@@ -6,6 +5,7 @@ const {
   registration,
   login,
   patchUserSubscription,
+  updateAvatar,
 } = require("../services/userService");
 
 const registrationController = async (req, res, next) => {
@@ -28,9 +28,7 @@ const loginController = async (req, res) => {
 };
 const getCurrentUserController = async (req, res) => {
   const { _id } = req.user;
-  console.log("CurrentUse", _id);
   const user = await User.findById(_id);
-  console.log("Current", user);
   res.json({
     email: user.email,
     subscription: user.subscription,
@@ -47,17 +45,10 @@ const updateUserController = async (req, res) => {
   });
 };
 
-const avatarDir = path.join(__dirname, "../", "public", "avatars");
-
 const updateAvatarController = async (req, res) => {
   const { _id } = req.user;
   const { path: tempUpload, originalname } = req.file;
-  const extention = originalname.split(".").pop();
-  const filename = `${_id}.${extention}`;
-  const resultUpload = path.join(avatarDir, filename);
-  await fs.rename(tempUpload, resultUpload);
-  const avatarURL = path.join("avatars", filename);
-  await User.findByIdAndUpdate(_id, { avatarURL });
+  const avatarURL = await updateAvatar(_id, { tempUpload, originalname });
   res.json({
     avatarURL,
   });
