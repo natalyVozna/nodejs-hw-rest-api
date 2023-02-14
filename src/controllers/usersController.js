@@ -1,8 +1,11 @@
+const path = require("path");
 const { User } = require("../models/userModel");
+
 const {
   registration,
   login,
   patchUserSubscription,
+  updateAvatar,
 } = require("../services/userService");
 
 const registrationController = async (req, res, next) => {
@@ -31,14 +34,23 @@ const getCurrentUserController = async (req, res) => {
     subscription: user.subscription,
   });
 };
+
 const updateUserController = async (req, res) => {
   const { _id: userId } = req.user;
   const { subscription } = req.body;
-  console.log("req.body", req.body, req.user);
   const user = await patchUserSubscription(userId, subscription);
   res.json({
     email: user.email,
     subscription: user.subscription,
+  });
+};
+
+const updateAvatarController = async (req, res) => {
+  const { _id } = req.user;
+  const { path: tempUpload, originalname } = req.file;
+  const avatarURL = await updateAvatar(_id, { tempUpload, originalname });
+  res.json({
+    avatarURL,
   });
 };
 
@@ -54,4 +66,5 @@ module.exports = {
   logoutController,
   getCurrentUserController,
   updateUserController,
+  updateAvatarController,
 };

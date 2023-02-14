@@ -5,13 +5,14 @@ const { User } = require("../models/userModel");
 const authenticate = async (req, res, next) => {
   try {
     const [bearer, token] = req.headers.authorization.split(" ");
-
     if (bearer !== "Bearer") {
       throw RequestError(401, "Not authorized");
     }
 
     const { id } = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(id);
+    console.log("verif", user, id);
+
     if (!user || !user.token || user.token !== token) {
       throw RequestError(401, "Not authorized");
     }
