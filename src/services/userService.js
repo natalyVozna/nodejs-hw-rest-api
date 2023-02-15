@@ -2,10 +2,15 @@ const { User } = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const RequestError = require("../helpers/RequestError");
+const sendEmail = require("../helpers/sendEmail");
 const gravatar = require("gravatar");
 const path = require("path");
 const fs = require("fs").promises;
 const Jimp = require("jimp");
+const { v4: uuidv4 } = require("uuid");
+// const { nanoid } = require("nanoid");
+
+const { BASE_URL } = process.env;
 
 const registration = async (email, password) => {
   const checkUser = await User.findOne({ email });
@@ -15,11 +20,53 @@ const registration = async (email, password) => {
   }
   const hashPassword = await bcrypt.hash(password, 10);
   const avatarURL = gravatar.url(email);
+  const verificationToken = uuidv4();
   const user = await User.create({
     email,
     password: hashPassword,
     avatarURL,
+    verificationToken,
   });
+
+  const mail = {
+    to: email,
+    subject: "Verify email",
+    html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${verificationToken}>Click to verify your email</a>`,
+  };
+
+  await sendEmail(mail);
+
+  return user;
+};
+
+const verify = async (verificationToken) => {
+  const user = await User.findOne({ verificationToken });
+
+  if (!user) {
+    throw RequestError(404, `User not found`);
+  }
+
+  await User.findByIdAndUpdate(user._id, {
+    verify: true,
+    verificationToken: "",
+  });
+};
+
+const resendEmail = async (email) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw RequestError(404, `User not found`);
+  }
+  if (user.verify) {
+    throw RequestError(400, `Verification has already been passed`);
+  }
+  const mail = {
+    to: email,
+    subject: "Verify email",
+    html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${user.verificationToken}>Click to verify your email</a>`,
+  };
+  await sendEmail(mail);
 
   return user;
 };
@@ -27,9 +74,7 @@ const registration = async (email, password) => {
 const login = async (email, password) => {
   const user = await User.findOne({ email });
 
-  console.log("user", user);
-
-  if (!user) {
+  if (!user || user.verify) {
     throw RequestError(401, `Email or password is wrong`);
   }
   if (!(await bcrypt.compare(password, user.password))) {
@@ -87,4 +132,6 @@ module.exports = {
   login,
   patchUserSubscription,
   updateAvatar,
+  verify,
+  resendEmail,
 };
