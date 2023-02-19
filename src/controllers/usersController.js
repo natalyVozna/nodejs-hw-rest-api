@@ -3,10 +3,7 @@ const { User } = require("../models/userModel");
 const sgMail = require("@sendgrid/mail");
 
 const { SENDGRID_API_KEY } = process.env;
-// sgMail.setApiKey(SENDGRID_API_KEY);
-sgMail.setApiKey(
-  "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"
-);
+sgMail.setApiKey(SENDGRID_API_KEY);
 
 const {
   registration,

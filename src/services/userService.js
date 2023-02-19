@@ -74,8 +74,11 @@ const resendEmail = async (email) => {
 const login = async (email, password) => {
   const user = await User.findOne({ email });
 
-  if (!user || user.verify) {
+  if (!user) {
     throw RequestError(401, `Email or password is wrong`);
+  }
+  if (!user.verify) {
+    throw RequestError(401, `User not verified`);
   }
   if (!(await bcrypt.compare(password, user.password))) {
     throw RequestError(401, `Email or password is wrong`);
