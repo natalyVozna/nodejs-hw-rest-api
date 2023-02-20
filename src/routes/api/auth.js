@@ -9,6 +9,8 @@ const {
   getCurrentUserController,
   updateUserController,
   updateAvatarController,
+  verifyController,
+  resendEmailController,
 } = require("../../controllers/usersController");
 
 const { asyncWrapper } = require("../../helpers/apiHelpers");
@@ -21,6 +23,12 @@ router.post(
   "/register",
   validateBody(schemas.registerSchema),
   asyncWrapper(registrationController)
+);
+router.get("/verify/:verificationToken", asyncWrapper(verifyController));
+router.post(
+  "/verify",
+  validateBody(schemas.verifyEmailSchema),
+  asyncWrapper(resendEmailController)
 );
 router.post(
   "/login",

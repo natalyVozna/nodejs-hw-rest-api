@@ -1,19 +1,39 @@
 const path = require("path");
 const { User } = require("../models/userModel");
+const sgMail = require("@sendgrid/mail");
+
+const { SENDGRID_API_KEY } = process.env;
+sgMail.setApiKey(SENDGRID_API_KEY);
 
 const {
   registration,
   login,
   patchUserSubscription,
   updateAvatar,
+  verify,
+  resendEmail,
 } = require("../services/userService");
 
-const registrationController = async (req, res, next) => {
+const registrationController = async (req, res) => {
   const { password, email } = req.body;
   const user = await registration(email, password);
   res.status(201).json({
     email: user.email,
     subscription: user.subscription,
+  });
+};
+const verifyController = async (req, res) => {
+  const { verificationToken } = req.params;
+  await verify(verificationToken);
+  res.json({
+    message: "Verification successful",
+  });
+};
+const resendEmailController = async (req, res) => {
+  const { email } = req.body;
+  await resendEmail(email);
+  res.json({
+    message: "Verification email sent",
   });
 };
 
@@ -62,9 +82,11 @@ const logoutController = async (req, res) => {
 
 module.exports = {
   registrationController,
+  verifyController,
   loginController,
   logoutController,
   getCurrentUserController,
   updateUserController,
   updateAvatarController,
+  resendEmailController,
 };

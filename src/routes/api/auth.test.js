@@ -23,15 +23,13 @@
 
 //   afterEach((done) => {
 //     mongoose.connection.db["db-contacts"](() => {
-//       mongoose.connection.close(() => done());
+//       mongoose.connect.close(() => done());
 //     });
 //   });
 //   test("test login route", async (done) => {
 //     const newUser = {
-//       _id: "1",
 //       email: "test9@mail.com",
 //       password: "1234555",
-//       avatarURL: "qwe.jpg",
 //     };
 
 //     const user = await User.create(newUser);
@@ -54,6 +52,7 @@
 //     expect(response.statusCode).toBe(200);
 //     const { body } = response;
 //     expect(body.token).toBeTruthy();
+//     expect.stringContaining(body.email);
 //     const { token } = await User.findById(user._id);
 //     expect(body.token).toBe(token);
 //     done();
